@@ -1,0 +1,31 @@
+[gd_scene load_steps=4 format=3 uid="uid://d3c5bkpujq8wb"]
+
+[ext_resource type="Script" path="res://scripts/controllers/battle_controller.gd" id="1_battle_controller"]
+[ext_resource type="Script" path="res://scripts/systems/battlefield_view.gd" id="2_battlefield_view"]
+
+[sub_resource type="Environment" id="Environment_battle"]
+background_mode = 1
+background_color = Color(0.4, 0.5, 0.6, 1)
+ambient_light_source = 2
+ambient_light_color = Color(0.8, 0.8, 0.8, 1)
+
+[node name="Battle" type="Node"]
+script = ExtResource("1_battle_controller")
+
+[node name="BattlefieldView" type="Node3D" parent="."]
+script = ExtResource("2_battlefield_view")
+
+[node name="Units" type="Node3D" parent="."]
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.707107, 0.707107, 0, -0.707107, 0.707107, 7, 12, 12)
+projection = 1
+size = 20.0
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.5, 0.866025, 0, -0.866025, 0.5, 0, 10, 5)
+light_energy = 0.8
+shadow_enabled = true
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_battle")
