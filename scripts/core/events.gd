@@ -50,3 +50,11 @@ class UnitActivatedEvent extends GameEvent:
         unit_id = u_id
         team = u_team
 
+# Unit died event
+class UnitDiedEvent extends GameEvent:
+    var unit_id: int
+
+    func _init(u_id: int):
+        event_type = "unit_died"
+        unit_id = u_id
+

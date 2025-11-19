@@ -38,26 +38,46 @@ static func update_gamestate(current_state, action) -> Dictionary:
                 var distance = abs(action.target_pos.x - unit.position.x) + abs(action.target_pos.y - unit.position.y)
                 if distance <= unit.movement_range:
                     unit.position = action.target_pos
-                    unit.has_acted = true
+                    unit.has_moved = true  # Mark as moved, but not acted (can still attack)
                     events.append(GameEvent_class.MoveEvent.new(action.unit_id, action.path))
-                    # After unit acts, move to next in initiative
-                    var next_result = _advance_to_next_unit(new_state)
-                    new_state = next_result.state
-                    events.append_array(next_result.events)
 
         ActionType.ATTACK:
             if new_state.units.has(action.unit_id) and new_state.units.has(action.target_id):
-                var damage = _calculate_damage(new_state, action)
-                new_state.units[action.target_id].health -= damage
-                new_state.units[action.unit_id].has_acted = true
+                var attacker = new_state.units[action.unit_id]
+                var target = new_state.units[action.target_id]
+
+                # Calculate damage
+                var damage = attacker.attack_damage + randi_range(-5, 5)  # Add variance
                 var is_crit = randf() < 0.2  # 20% crit chance
+                if is_crit:
+                    damage = int(damage * 1.5)
+
+                target.health -= damage
+                attacker.has_acted = true
+
                 events.append(GameEvent_class.AttackEvent.new(action.unit_id, action.target_id, damage, is_crit))
+
+                # Check if target died
+                if target.health <= 0:
+                    events.append(GameEvent_class.UnitDiedEvent.new(action.target_id))
+                    new_state.units.erase(action.target_id)
+                    # Remove from turn order
+                    var idx = new_state.turn_order.find(action.target_id)
+                    if idx >= 0:
+                        new_state.turn_order.remove_at(idx)
+                        # Adjust current_unit_index if needed
+                        if idx < new_state.current_unit_index:
+                            new_state.current_unit_index -= 1
+
                 # After unit acts, move to next in initiative
                 var next_result = _advance_to_next_unit(new_state)
                 new_state = next_result.state
                 events.append_array(next_result.events)
 
         ActionType.NEXT_UNIT:
+            # Mark current unit as acted if they haven't already
+            if new_state.units.has(new_state.active_unit_id):
+                new_state.units[new_state.active_unit_id].has_acted = true
             var next_result = _advance_to_next_unit(new_state)
             new_state = next_result.state
             events.append_array(next_result.events)
@@ -100,9 +120,10 @@ static func _advance_to_next_unit(state) -> Dictionary:
     if state.current_unit_index >= state.turn_order.size():
         state.current_unit_index = 0
         state.current_turn += 1
-        # Reset has_acted for all units
+        # Reset has_acted and has_moved for all units
         for unit_id in state.units:
             state.units[unit_id].has_acted = false
+            state.units[unit_id].has_moved = false
         events.append(GameEvent_class.TurnStartEvent.new(state.current_turn, -1))
 
     # Set active unit
@@ -142,16 +163,43 @@ static func get_valid_moves(state, unit_id: int) -> Array[Vector2i]:
 
     return valid_moves
 
-# Simple AI: move towards nearest enemy
-static func get_ai_move(state, unit_id: int) -> Vector2i:
+# Get valid attack targets for a unit
+static func get_valid_attack_targets(state, unit_id: int) -> Array[int]:
     if not state.units.has(unit_id):
-        return Vector2i(-1, -1)
+        return []
 
     var unit = state.units[unit_id]
+    var valid_targets: Array[int] = []
+
+    # Find all enemy units within attack range
+    for other_id in state.units:
+        var other_unit = state.units[other_id]
+        if other_unit.team != unit.team:  # Must be enemy
+            var distance = abs(other_unit.position.x - unit.position.x) + abs(other_unit.position.y - unit.position.y)
+            if distance <= unit.attack_range:
+                valid_targets.append(other_id)
+
+    return valid_targets
+
+# Simple AI: move towards nearest enemy and attack if possible
+static func get_ai_action(state, unit_id: int) -> Dictionary:
+    """Returns {action_type: 'move'|'attack'|'end_turn', move_to: Vector2i, attack_target: int}"""
+    if not state.units.has(unit_id):
+        return {"action_type": "end_turn"}
+
+    var unit = state.units[unit_id]
+
+    # First, check if we can attack from current position
+    var attack_targets = get_valid_attack_targets(state, unit_id)
+    if not attack_targets.is_empty():
+        # Attack the first available target
+        return {"action_type": "attack", "attack_target": attack_targets[0]}
+
+    # If can't attack yet, try to move closer to nearest enemy
     var valid_moves = get_valid_moves(state, unit_id)
 
     if valid_moves.is_empty():
-        return unit.position  # Can't move
+        return {"action_type": "end_turn"}
 
     # Find nearest enemy
     var nearest_enemy_pos = Vector2i(-1, -1)
@@ -175,7 +223,10 @@ static func get_ai_move(state, unit_id: int) -> Vector2i:
             best_distance = distance
             best_move = move_pos
 
-    return best_move
+    if best_move != unit.position:
+        return {"action_type": "move", "move_to": best_move}
+    else:
+        return {"action_type": "end_turn"}
 
 # Initialize a 3v3 battle setup
 static func create_initial_3v3_state():

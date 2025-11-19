@@ -8,6 +8,7 @@ class_name BattlefieldView
 
 var grid_tiles: Array[Node3D] = []
 var move_indicators: Array[Node3D] = []
+var attack_indicators: Array[Node3D] = []
 
 func _ready():
     print("=== Creating Battlefield Grid ===")
@@ -118,4 +119,42 @@ func clear_move_indicators():
     for indicator in move_indicators:
         indicator.queue_free()
     move_indicators.clear()
+
+func show_attack_indicator(grid_pos: Vector2i):
+    # Similar to move indicator but red
+    var static_body = StaticBody3D.new()
+
+    var indicator = MeshInstance3D.new()
+    var mesh = PlaneMesh.new()
+    mesh.size = Vector2(tile_size * 0.8, tile_size * 0.8)
+    indicator.mesh = mesh
+
+    var material = StandardMaterial3D.new()
+    material.albedo_color = Color(1.0, 0.0, 0.0, 0.5)  # Red with transparency
+    material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+    material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+    indicator.material_override = material
+
+    # Add collision shape so raycast can detect clicks
+    var collision = CollisionShape3D.new()
+    var box_shape = BoxShape3D.new()
+    box_shape.size = Vector3(tile_size * 0.8, 0.1, tile_size * 0.8)
+    collision.shape = box_shape
+
+    # Position at tile CENTER, slightly above ground
+    static_body.position = Vector3(
+        grid_pos.x * tile_size + tile_size / 2.0,
+        0.05,
+        grid_pos.y * tile_size + tile_size / 2.0
+    )
+
+    static_body.add_child(indicator)
+    static_body.add_child(collision)
+    add_child(static_body)
+    attack_indicators.append(static_body)
+
+func clear_attack_indicators():
+    for indicator in attack_indicators:
+        indicator.queue_free()
+    attack_indicators.clear()
 

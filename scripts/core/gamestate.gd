@@ -38,9 +38,11 @@ class UnitData:
     var health: int
     var max_health: int
     var movement_range: int
-    var attack_range: int
+    var attack_range: int  # Melee range
+    var attack_damage: int
     var initiative: int  # Higher = acts first
-    var has_acted: bool  # Has this unit acted this round?
+    var has_acted: bool  # Has this unit completed their turn?
+    var has_moved: bool  # Has this unit moved this turn?
 
     func _init(unit_id: int, pos: Vector2i, unit_team: int, move_range: int = 2):
         id = unit_id
@@ -49,6 +51,8 @@ class UnitData:
         health = 100
         max_health = 100
         movement_range = move_range
-        attack_range = 3
+        attack_range = 1  # Melee range = 1 tile
+        attack_damage = 30
         initiative = randi_range(1, 20)  # Random initiative 1-20
         has_acted = false
+        has_moved = false
