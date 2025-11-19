@@ -1,20 +1,29 @@
-[gd_scene load_steps=3 format=3 uid="uid://chg8ujfqabv0b"]
+[gd_scene load_steps=4 format=3 uid="uid://chg8ujfqabv0b"]
 
 [ext_resource type="Script" path="res://scripts/systems/unit_view.gd" id="1_unit_view"]
 
 [sub_resource type="CapsuleMesh" id="CapsuleMesh_unit"]
-height = 1.5
-radius = 0.3
+height = 2.0
+radius = 0.4
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape_unit"]
+height = 2.0
+radius = 0.4
 
 [node name="UnitView" type="Node3D"]
 script = ExtResource("1_unit_view")
 
-[node name="Model" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.75, 0)
+[node name="StaticBody3D" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+
+[node name="Model" type="MeshInstance3D" parent="StaticBody3D"]
 mesh = SubResource("CapsuleMesh_unit")
 
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D"]
+shape = SubResource("CapsuleShape_unit")
+
 [node name="Label" type="Label3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, 0)
 pixel_size = 0.01
 billboard = 1
 text = "U0"

@@ -1,7 +1,9 @@
-[gd_scene load_steps=4 format=3 uid="uid://d3c5bkpujq8wb"]
+[gd_scene load_steps=6 format=3 uid="uid://d3c5bkpujq8wb"]
 
 [ext_resource type="Script" path="res://scripts/controllers/battle_controller.gd" id="1_battle_controller"]
 [ext_resource type="Script" path="res://scripts/systems/battlefield_view.gd" id="2_battlefield_view"]
+[ext_resource type="Script" path="res://scripts/systems/turn_ui.gd" id="3_turn_ui"]
+[ext_resource type="Script" path="res://scripts/systems/camera_controller.gd" id="4_camera_controller"]
 
 [sub_resource type="Environment" id="Environment_battle"]
 background_mode = 1
@@ -21,6 +23,7 @@ script = ExtResource("2_battlefield_view")
 transform = Transform3D(1, 0, 0, 0, 0.707107, 0.707107, 0, -0.707107, 0.707107, 7, 12, 12)
 projection = 1
 size = 20.0
+script = ExtResource("4_camera_controller")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 0.5, 0.866025, 0, -0.866025, 0.5, 0, 10, 5)
@@ -29,3 +32,42 @@ shadow_enabled = true
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_battle")
+
+[node name="TurnUI" type="CanvasLayer" parent="."]
+
+[node name="Control" type="Control" parent="TurnUI"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("3_turn_ui")
+
+[node name="TurnLabel" type="Label" parent="TurnUI/Control"]
+layout_mode = 0
+offset_left = 20.0
+offset_top = 20.0
+offset_right = 200.0
+offset_bottom = 50.0
+theme_override_font_sizes/font_size = 24
+text = "Round 1"
+
+[node name="UnitLabel" type="Label" parent="TurnUI/Control"]
+layout_mode = 0
+offset_left = 20.0
+offset_top = 55.0
+offset_right = 400.0
+offset_bottom = 85.0
+theme_override_font_sizes/font_size = 20
+text = "Unit 0 - PLAYER (Initiative: 15)"
+
+[node name="InstructionLabel" type="Label" parent="TurnUI/Control"]
+layout_mode = 0
+offset_left = 20.0
+offset_top = 90.0
+offset_right = 600.0
+offset_bottom = 120.0
+theme_override_font_sizes/font_size = 16
+text = "Click your unit, then click a green tile to move"
+

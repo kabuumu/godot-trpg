@@ -39,3 +39,14 @@ class TurnStartEvent extends GameEvent:
         event_type = "turn_start"
         turn_number = turn
         active_player = player
+
+# Unit activated event (for initiative order)
+class UnitActivatedEvent extends GameEvent:
+    var unit_id: int
+    var team: int
+
+    func _init(u_id: int, u_team: int):
+        event_type = "unit_activated"
+        unit_id = u_id
+        team = u_team
+

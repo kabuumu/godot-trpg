@@ -1,0 +1,48 @@
+# Godot 4+ specific ignores
+.godot/
+.godot-mono/
+
+# Godot-specific files
+*.translation
+*.import
+# Note: .uid files SHOULD be committed in Godot 4.x
+
+# Mono-specific ignores (if using C#)
+.mono/
+data_*/
+mono_crash.*.json
+
+# System/tool-specific ignores
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE-specific ignores
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Build/export ignores
+export/**
+!export/web/
+export/web/**
+!export/web/.gitkeep
+build/
+dist/
+
+# Logs and temporary files
+*.log
+*.tmp
+*.bak
+*.cache
+
+# Git-specific
+*.orig
+*.rej
+
